@@ -100,7 +100,9 @@ let g_selectedType = POINT;
 let g_selectedSegments = 10.0;
 let g_globalAngle = 0;
 let g_FrontLeftLegAngle = 0;
+let g_frontLeftLegAnimation = false;
 let g_FrontLeftLegPawAngle = 0;
+let g_frontLeftLegPawAnimation = false;
 
 // Set up actions for the HTML UI elements
 function addActionsForHtmlUI() {
@@ -122,8 +124,12 @@ function addActionsForHtmlUI() {
   document.getElementById('redSlide').addEventListener('mouseup', function() { g_selectedColor[0] = this.value / 100; });
   document.getElementById('greenSlide').addEventListener('mouseup', function() { g_selectedColor[1] = this.value / 100; });*/
   document.getElementById('frontLeftLegSlide').addEventListener('mousemove', function() { g_FrontLeftLegAngle = this.value; renderScene(); });
+  document.getElementById('animationFrontLeftLegOnButton').onclick = function() {g_frontLeftLegAnimation = true; };
+  document.getElementById('animationFrontLeftLegOffButton').onclick = function() {g_frontLeftLegAnimation = false; };
 
   document.getElementById('frontLeftLegPawSlide').addEventListener('mousemove', function() { g_FrontLeftLegPawAngle = this.value; renderScene(); });
+  document.getElementById('animationFrontLeftLegPawOnButton').onclick = function() {g_frontLeftLegPawAnimation = true; };
+  document.getElementById('animationFrontLeftLegPawOffButton').onclick = function() {g_frontLeftLegPawAnimation = false; };
 
   // Size slider events
   //document.getElementById('sizeSlide').addEventListener('mouseup', function() { g_selectedSize = this.value; });
@@ -153,7 +159,40 @@ function main() {
   gl.clearColor(0.0, 0.0, 0.0, 1.0);
 
   // Clear <canvas>
+  //renderScene();
+
+  requestAnimationFrame(tick);
+}
+
+var g_startTime = performance.now()/1000.0;
+var g_seconds = performance.now()/1000.0 - g_startTime;
+
+// Called by browser repeatedly whenever it's time
+function tick() {
+  // Save the current time
+  g_seconds = performance.now() / 1000.0 - g_startTime;
+  console.log(g_seconds);
+
+  // Update Animation Angles
+  updateAnimationAngles();
+
+  // Draw everything
   renderScene();
+
+  // Tell the browser to update again when it has time
+  requestAnimationFrame(tick);
+
+
+}
+
+function updateAnimationAngles() {
+  if (g_frontLeftLegAnimation) {
+    g_FrontLeftLegAngle = (45 * Math.sin(g_seconds));
+  }
+
+  if (g_frontLeftLegPawAnimation) {
+    g_FrontLeftLegPawAngle = (45 * Math.sin(3 * g_seconds));
+  }
 }
 
 function convertCoordinatesEventToGL(ev) {
@@ -181,14 +220,6 @@ function renderScene() {
   gl.clear(gl.COLOR_BUFFER_BIT);
 
   var matr = new Matrix4();
-  //var len = g_points.length;
-  /*var len = g_shapesList.length;
-
-  for(var i = 0; i < len; i++) {
-
-    g_shapesList[i].render();
-
-  }*/
 
     // Draw a test triangle
     //drawTriangle3D( [-1.0,0.0,0.0,  -0.5,-1.0,0.0,  0.0,0.0,0.0]);
@@ -222,24 +253,75 @@ function renderScene() {
     // Draw torso
     matr.setIdentity();
     matr.translate(-0.2, -0.2, -0.2);
-    //matr.rotate(-25, 1, 0, 0);
-    //matr.rotate(35, 0, 1, 0);
     matr.scale(0.25, 0.35, 0.9);
 
-    drawCube(matr, [0, 1, 0, 1]);
+    drawCube(matr, [0.2, 0.2, 0.2, 1]);
+
+
+
+    // Draw head
+
+    matr.setIdentity();
+    matr.translate(-0.25, 0, -0.55);
+    matr.scale(0.35, 0.3, 0.35);
+
+    drawCube(matr, [0.2, 0.2, 0.2, 1]);
+
+    // Draw mouth
+
+    matr.setIdentity();
+    matr.translate(-0.2, 0, -0.65);
+    matr.scale(0.25, 0.15, 0.1);
+
+    drawCube(matr, [0.9, 0.9, 0.9, 1]);
+
+    // Draw left ear
+
+    matr.setIdentity();
+    matr.translate(-0.23, 0.3, -0.35);
+    matr.scale(0.08, 0.08, 0.15);
+
+    drawCube(matr, [0.2, 0.2, 0.2, 1]);
+
+    // Draw right ear
+
+    matr.setIdentity();
+    matr.translate(-0.02, 0.3, -0.35);
+    matr.scale(0.08, 0.08, 0.15);
+
+    drawCube(matr, [0.2, 0.2, 0.2, 1]);
+
+
+    // Draw tail section 1
+
+    matr.setIdentity();
+    matr.translate(-0.25, 0.1, 0.65)
+    matr.rotate(45, 1, 0, 0);
+    matr.scale(0.05, 0.05, 0.4);
+
+    drawCube(matr, [0.2, 0.2, 0.2, 1]);
+
+    // Draw tail section 2
+
+    matr.setIdentity();
+    matr.translate(-0.25, -0.2, 0.95)
+    //matr.rotate(45, 1, 0, 0);
+    matr.scale(0.05, 0.05, 0.4);
+
+    drawCube(matr, [0.2, 0.2, 0.2, 1]);
+
+
 
     // Draw front left leg
     matr.setIdentity();
-    matr.rotate(g_FrontLeftLegAngle, 1, 0, 0);
 
+    matr.rotate(g_FrontLeftLegAngle, 1, 0, 0);
     var leftLegCoordsMat = new Matrix4(matr);
 
     matr.translate(0, -0.435, -0.12);
-    //matr.rotate(-25, 1, 0, 0);
-    //matr.rotate(35, 0, 1, 0);
     matr.scale(0.1, 0.6, 0.1);
     
-    drawCube(matr, [1, 0, 0, 1]);
+    drawCube(matr, [0.2, 0.2, 0.2, 1]);
 
     // Draw front left leg paw
     matr = leftLegCoordsMat;
@@ -249,18 +331,16 @@ function renderScene() {
     matr.translate(-0.012, -0.45, -0.12);
     matr.scale(0.12, 0.15, 0.1);
 
-    drawCube(matr, [0, 0, 1, 1]);
+    drawCube(matr, [0.9, 0.9, 0.9, 1]);
 
 
 
     // Draw front right leg
     matr.setIdentity();
     matr.translate(-0.25, -0.435, -0.12);
-    //matr.rotate(-25, 1, 0, 0);
-    //matr.rotate(35, 0, 1, 0);
     matr.scale(0.1, 0.6, 0.1);
     
-    drawCube(matr, [1, 0, 0, 1]);
+    drawCube(matr, [0.2, 0.2, 0.2, 1]);
 
     // Draw front right leg paw
     matr.setIdentity();
@@ -269,18 +349,16 @@ function renderScene() {
     matr.translate(-0.012, -0.45, -0.12);
     matr.scale(0.12, 0.15, 0.1);
 
-    drawCube(matr, [0, 0, 1, 1]);
+    drawCube(matr, [0.9, 0.9, 0.9, 1]);
 
 
 
     // Draw back left leg
     matr.setIdentity();
     matr.translate(0, -0.335, 0.52);
-    //matr.rotate(-25, 1, 0, 0);
-    //matr.rotate(35, 0, 1, 0);
     matr.scale(0.1, 0.25, 0.1);
     
-    drawCube(matr, [1, 0, 0, 1]);
+    drawCube(matr, [0.2, 0.2, 0.2, 1]);
 
     // Draw back left lower leg 
     matr.setIdentity();
@@ -289,7 +367,7 @@ function renderScene() {
     matr.translate(-0.012, -0.45, 0.52);
     matr.scale(0.11, 0.35, 0.1);
 
-    drawCube(matr, [0, 0, 1, 1]);
+    drawCube(matr, [0.9, 0.9, 0.9, 1]);
 
     // Draw back left leg paw
     matr.setIdentity();
@@ -298,18 +376,16 @@ function renderScene() {
     matr.translate(-0.012, -0.45, -0.12);
     matr.scale(0.12, 0.15, 0.1);
 
-    drawCube(matr, [1, 1, 0, 1]);
+    drawCube(matr, [0.9, 0.9, 0.9, 1]);
 
 
 
     // Draw back right leg
     matr.setIdentity();
     matr.translate(-0.25, -0.335, 0.52);
-    //matr.rotate(-25, 1, 0, 0);
-    //matr.rotate(35, 0, 1, 0);
     matr.scale(0.1, 0.25, 0.1);
     
-    drawCube(matr, [1, 0, 0, 1]);
+    drawCube(matr, [0.2, 0.2, 0.2, 1]);
 
     // Draw back right lower leg 
     matr.setIdentity();
@@ -318,7 +394,7 @@ function renderScene() {
     matr.translate(-0.012, -0.45, 0.52);
     matr.scale(0.11, 0.35, 0.1);
 
-    drawCube(matr, [0, 0, 1, 1]);
+    drawCube(matr, [0.9, 0.9, 0.9, 1]);
 
     // Draw back right leg paw
     matr.setIdentity();
@@ -327,7 +403,7 @@ function renderScene() {
     matr.translate(-0.012, -0.45, -0.12);
     matr.scale(0.12, 0.15, 0.1);
 
-    drawCube(matr, [1, 1, 0, 1]);
+    drawCube(matr, [0.9, 0.9, 0.9, 1]);
 
 
 
@@ -378,25 +454,6 @@ function click(ev) {
   point.size = g_selectedSize;
   g_shapesList.push(point);
 
-  /*
-  // Store the coordinates to g_points array
-  g_points.push([x, y]);
-
-  // Store the coordinates to g_points array
-  g_colors.push(g_selectedColor.slice());
-
-  // Store the size to g_sizes array
-  g_sizes.push(g_selectedSize);
-  */
-
-  /*if (x >= 0.0 && y >= 0.0) {      // First quadrant
-    g_colors.push([1.0, 0.0, 0.0, 1.0]);  // Red
-  } else if (x < 0.0 && y < 0.0) { // Third quadrant
-    g_colors.push([0.0, 1.0, 0.0, 1.0]);  // Green
-  } else {                         // Others
-    g_colors.push([1.0, 1.0, 1.0, 1.0]);  // White
-  }*/
-
   // Draw every shape that is supposed to be in the canvas
   renderScene();
   
@@ -405,114 +462,4 @@ function click(ev) {
 function drawRectangleWithTriangles(widthStart, widthEnd, heightStart, heightEnd) {
   drawTriangle([widthStart, heightStart, widthEnd, heightEnd, widthEnd, heightStart]);
   drawTriangle([widthStart, heightStart, widthStart, heightEnd, widthEnd, heightEnd]);
-}
-
-function drawAPicture() {
-  // clear the canvas
-  g_shapesList = [];
-  renderScene();
-
-  // draw triangles
-
-  // draw sky
-  gl.uniform4f(u_FragColor, 0.5, 0.8, 0.9, 1.0);
-  /*drawTriangle([-1, -1, 1, 1, 1, -1]);
-  drawTriangle([-1, -1, -1, 1, 1, 1]); // draw two connected triangles to make a rectangle*/
-  drawRectangleWithTriangles(-1, 1, -1, 1);
-
-  // draw grass
-  gl.uniform4f(u_FragColor, 0.2, 0.7, 0.3, 1.0);
-  drawTriangle([-1, -1, -0.5, -0.7, 0.7, -1]);
-  drawTriangle([-0.2, -1, 0.7, -0.7, 1, -1]);
-  drawTriangle([0.7, -0.7, 1, -0.7, 1, -1]);
-
-  // draw the sun
-  let sun = new Circle();
-  sun.position = [-0.6, 0.7];
-  sun.size = 35.0;
-  sun.segments = 20.0;
-  sun.color = [0.9, 0.8, 0.3, 1.0];
-  sun.render();
-  gl.uniform4f(u_FragColor, 0.9, 0.8, 0.3, 1.0);
-  drawTriangle([-0.5, 0.6, -0.3, 0.3, -0.2, 0.4]);
-  drawTriangle([-0.7, 0.6, -1.0, 0.4, -0.9, 0.3]);
-  drawTriangle([-0.6, 0.6, -0.7, 0.3, -0.5, 0.3]);
-
-  // draw clouds
-  gl.uniform4f(u_FragColor, 1.0, 1.0, 1.0, 1.0);
-  drawTriangle([-0.6, 0.7, -0.3, 0.9, -0.1, 0.7]);
-  drawTriangle([-0.6, 0.7, 0.0, 0.5, 0.2, 0.7]);
-  drawTriangle([-0.2, 0.7, 0.1, 0.9, 0.4, 0.7]);
-  drawTriangle([-0.3, 0.8, -0.6, 1.0, -0.8, 0.7]);
-  drawTriangle([-0.9, 0.7, -0.8, 0.6, -0.4, 0.8]);
-  drawTriangle([-1.0, 0.7, -0.8, 0.9, -0.4, 0.7]);
-  drawTriangle([0.6, 0.7, 0.9, 0.9, 1.0, 0.7]);
-  drawTriangle([0.8, 0.8, 1.0, 1.0, 1.0, 0.7]);
-  drawTriangle([0.8, 0.7, 1.0, 0.7, 1.0, 0.6]);
-  drawTriangle([0.5, 0.6, 0.6, 0.8, 0.9, 0.7]);
-
-  // draw silo
-  let siloRoof = new Circle();
-  siloRoof.position = [0.7, 0.3];
-  siloRoof.size = 40.0;
-  siloRoof.segments = 20.0;
-  siloRoof.color = [0.8, 0.8, 0.8, 1.0];
-  siloRoof.render();
-  gl.uniform4f(u_FragColor, 0.7, 0.7, 0.7, 1.0);
-  drawRectangleWithTriangles(0.5, 0.9, -1, 0.3);
-  gl.uniform4f(u_FragColor, 0.8, 0.8, 0.8, 1.0);
-  drawRectangleWithTriangles(0.9, 0.95, -0.95, 0.25);
-
-  
-  
-  /*drawTriangle([0.5, -1, 0.9, 0.3, 0.9, -1]);
-  drawTriangle([0.5, -1, 0.5, 0.3, 0.9, 0.3]);*/
-
-  // draw barn
-  gl.uniform4f(u_FragColor, 0.75, 0.2, 0.0, 1.0);
-
-  drawRectangleWithTriangles(-0.4, 0.8, -1, -0.3); // base
-
-  drawTriangle([-0.4, -0.3, 0.2, 0.0, 0.8, -0.3]); // roof
-
-  gl.uniform4f(u_FragColor, 1.0, 1.0, 1.0, 1.0);
-  drawRectangleWithTriangles(0.1, 0.3, -1.0, -0.7); // door
-
-  drawRectangleWithTriangles(0.1, 0.3, -0.4, -0.2); // top window
-  drawTriangle([0.1, -0.2, 0.2, -0.1, 0.3, -0.2]);
-
-  drawRectangleWithTriangles(-0.3, -0.1, -0.8, -0.6); // left window
-  drawRectangleWithTriangles(0.5, 0.7, -0.8, -0.6); // right window
-
-  // draw tree
-  gl.uniform4f(u_FragColor, 0.5, 0.3, 0.1, 1.0);
-  drawTriangle([-0.5, -1.0, -0.3, -1.0, -0.4, -0.4]); // trunk
-  gl.uniform4f(u_FragColor, 0.2, 0.5, 0.05, 1.0);
-  drawTriangle([-0.6, -0.7, -0.4, -0.2, -0.2, -0.7]); // leaves
-  drawTriangle([-0.6, -0.4, -0.4, 0.0, -0.2, -0.4]);
-
-}
-
-// drawAPattern Global variables:
-var numInc = 0.1;
-let patSize = 3.0;
-
-function drawAPattern() {
-
-  // clear the canvas
-  g_shapesList = [];
-  renderScene();
-
-  let num = 0;
-
-  for (i = -1.0; i < 1.0; i += numInc) {
-    for (j = -1.0; j < 1.0; j += numInc) {
-      num++;
-      let pnt = new Point();
-      pnt.position = [i, j];
-      pnt.size = patSize;
-      pnt.color = [Math.abs(j), Math.abs(j), Math.abs(i), 1.0];
-      pnt.render();
-    }
-  }
 }
