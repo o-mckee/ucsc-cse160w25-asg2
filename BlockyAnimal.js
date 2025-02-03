@@ -99,7 +99,8 @@ let g_selectedSize = 5.0;
 let g_selectedType = POINT;
 let g_selectedSegments = 10.0;
 let g_globalAngle = 0;
-let g_yellowAngle = 0;
+let g_FrontLeftLegAngle = 0;
+let g_FrontLeftLegPawAngle = 0;
 
 // Set up actions for the HTML UI elements
 function addActionsForHtmlUI() {
@@ -120,12 +121,14 @@ function addActionsForHtmlUI() {
   // Slider events
   document.getElementById('redSlide').addEventListener('mouseup', function() { g_selectedColor[0] = this.value / 100; });
   document.getElementById('greenSlide').addEventListener('mouseup', function() { g_selectedColor[1] = this.value / 100; });*/
-  document.getElementById('yellowSlide').addEventListener('mousemove', function() { g_yellowAngle = this.value; renderAllShapes(); });
+  document.getElementById('frontLeftLegSlide').addEventListener('mousemove', function() { g_FrontLeftLegAngle = this.value; renderScene(); });
+
+  document.getElementById('frontLeftLegPawSlide').addEventListener('mousemove', function() { g_FrontLeftLegPawAngle = this.value; renderScene(); });
 
   // Size slider events
   //document.getElementById('sizeSlide').addEventListener('mouseup', function() { g_selectedSize = this.value; });
 
-  document.getElementById('angleSlide').addEventListener('mousemove', function() { g_globalAngle = this.value; renderAllShapes(); });
+  document.getElementById('angleSlide').addEventListener('mousemove', function() { g_globalAngle = this.value; renderScene(); });
 
   // Circle Segment slider events
   //document.getElementById('segmentSlide').addEventListener('mouseup', function() { g_selectedSegments = this.value; });
@@ -150,7 +153,7 @@ function main() {
   gl.clearColor(0.0, 0.0, 0.0, 1.0);
 
   // Clear <canvas>
-  renderAllShapes();
+  renderScene();
 }
 
 function convertCoordinatesEventToGL(ev) {
@@ -164,7 +167,7 @@ function convertCoordinatesEventToGL(ev) {
   return([x, y]);
 }
 
-function renderAllShapes() {
+function renderScene() {
 
   // Check the time at the start of this function
   var startTime = performance.now();
@@ -176,6 +179,8 @@ function renderAllShapes() {
   // Clear <canvas>
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
   gl.clear(gl.COLOR_BUFFER_BIT);
+
+  var matr = new Matrix4();
   //var len = g_points.length;
   /*var len = g_shapesList.length;
 
@@ -189,7 +194,7 @@ function renderAllShapes() {
     //drawTriangle3D( [-1.0,0.0,0.0,  -0.5,-1.0,0.0,  0.0,0.0,0.0]);
 
     // Draw the body cube
-    var body = new Cube();
+    /*var body = new Cube();
     body.color = [1.0,0.0,0.0,1.0];
     body.matrix.setTranslate(-0.25, -0.75, 0.0);
     body.matrix.rotate(-5,1,0,0);
@@ -209,10 +214,122 @@ function renderAllShapes() {
     // test box
     var box = new Cube();
     box.color = [1,0,1,1];
-    box.matrix.setTranslate(-0.1,0.1,0.0,0.0);
+    box.matrix.setTranslate(-0.1,0.1,0.0);
     box.matrix.rotate(-30,1,0,0);
     box.matrix.scale(0.2,0.4,0.2);
-    box.render();
+    box.render();*/
+
+    // Draw torso
+    matr.setIdentity();
+    matr.translate(-0.2, -0.2, -0.2);
+    //matr.rotate(-25, 1, 0, 0);
+    //matr.rotate(35, 0, 1, 0);
+    matr.scale(0.25, 0.35, 0.9);
+
+    drawCube(matr, [0, 1, 0, 1]);
+
+    // Draw front left leg
+    matr.setIdentity();
+    matr.rotate(g_FrontLeftLegAngle, 1, 0, 0);
+
+    var leftLegCoordsMat = new Matrix4(matr);
+
+    matr.translate(0, -0.435, -0.12);
+    //matr.rotate(-25, 1, 0, 0);
+    //matr.rotate(35, 0, 1, 0);
+    matr.scale(0.1, 0.6, 0.1);
+    
+    drawCube(matr, [1, 0, 0, 1]);
+
+    // Draw front left leg paw
+    matr = leftLegCoordsMat;
+    matr.rotate(g_FrontLeftLegPawAngle, 1, 0, 0);
+    matr.translate(0, -0.19, 0.15);
+    matr.rotate(30, 1, 0, 0);
+    matr.translate(-0.012, -0.45, -0.12);
+    matr.scale(0.12, 0.15, 0.1);
+
+    drawCube(matr, [0, 0, 1, 1]);
+
+
+
+    // Draw front right leg
+    matr.setIdentity();
+    matr.translate(-0.25, -0.435, -0.12);
+    //matr.rotate(-25, 1, 0, 0);
+    //matr.rotate(35, 0, 1, 0);
+    matr.scale(0.1, 0.6, 0.1);
+    
+    drawCube(matr, [1, 0, 0, 1]);
+
+    // Draw front right leg paw
+    matr.setIdentity();
+    matr.translate(-0.25, -0.19, 0.15);
+    matr.rotate(30, 1, 0, 0);
+    matr.translate(-0.012, -0.45, -0.12);
+    matr.scale(0.12, 0.15, 0.1);
+
+    drawCube(matr, [0, 0, 1, 1]);
+
+
+
+    // Draw back left leg
+    matr.setIdentity();
+    matr.translate(0, -0.335, 0.52);
+    //matr.rotate(-25, 1, 0, 0);
+    //matr.rotate(35, 0, 1, 0);
+    matr.scale(0.1, 0.25, 0.1);
+    
+    drawCube(matr, [1, 0, 0, 1]);
+
+    // Draw back left lower leg 
+    matr.setIdentity();
+    matr.translate(0.007, 0.02, 0.06);
+    matr.rotate(15, 1, 0, 0);
+    matr.translate(-0.012, -0.45, 0.52);
+    matr.scale(0.11, 0.35, 0.1);
+
+    drawCube(matr, [0, 0, 1, 1]);
+
+    // Draw back left leg paw
+    matr.setIdentity();
+    matr.translate(0, -0.53, 0.85);
+    matr.rotate(80, 1, 0, 0);
+    matr.translate(-0.012, -0.45, -0.12);
+    matr.scale(0.12, 0.15, 0.1);
+
+    drawCube(matr, [1, 1, 0, 1]);
+
+
+
+    // Draw back right leg
+    matr.setIdentity();
+    matr.translate(-0.25, -0.335, 0.52);
+    //matr.rotate(-25, 1, 0, 0);
+    //matr.rotate(35, 0, 1, 0);
+    matr.scale(0.1, 0.25, 0.1);
+    
+    drawCube(matr, [1, 0, 0, 1]);
+
+    // Draw back right lower leg 
+    matr.setIdentity();
+    matr.translate(-0.243, 0.02, 0.06);
+    matr.rotate(15, 1, 0, 0);
+    matr.translate(-0.012, -0.45, 0.52);
+    matr.scale(0.11, 0.35, 0.1);
+
+    drawCube(matr, [0, 0, 1, 1]);
+
+    // Draw back right leg paw
+    matr.setIdentity();
+    matr.translate(-0.25, -0.53, 0.85);
+    matr.rotate(80, 1, 0, 0);
+    matr.translate(-0.012, -0.45, -0.12);
+    matr.scale(0.12, 0.15, 0.1);
+
+    drawCube(matr, [1, 1, 0, 1]);
+
+
 
   // Check the time at the end of the function, and show on web page
   var duration = performance.now() - startTime;
@@ -226,6 +343,13 @@ function sendTextToHTML(text, htmlID) {
     return;
   }
   htmlElm.innerHTML = text;
+}
+
+function drawCube(matrix, color) {
+  var newCube = new Cube();
+  newCube.color = color;
+  newCube.matrix = matrix;
+  newCube.render();
 }
 
 var g_shapesList = [];
@@ -274,7 +398,7 @@ function click(ev) {
   }*/
 
   // Draw every shape that is supposed to be in the canvas
-  renderAllShapes();
+  renderScene();
   
 }
 
@@ -286,7 +410,7 @@ function drawRectangleWithTriangles(widthStart, widthEnd, heightStart, heightEnd
 function drawAPicture() {
   // clear the canvas
   g_shapesList = [];
-  renderAllShapes();
+  renderScene();
 
   // draw triangles
 
@@ -377,7 +501,7 @@ function drawAPattern() {
 
   // clear the canvas
   g_shapesList = [];
-  renderAllShapes();
+  renderScene();
 
   let num = 0;
 
